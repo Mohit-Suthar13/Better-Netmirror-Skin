@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "NetMirror Glass",
+  "version": "1.5.0",
+  "description": "An Apple TV-inspired glass skin for the NetMirror website. Keeps the original catalog and player.",
+  "permissions": ["storage"],
+  "action": {"default_title": "NetMirror Glass", "default_popup": "popup.html"},
+  "content_scripts": [{
+    "matches": ["https://net77.cc/*"],
+    "js": ["content.js"],
+    "css": ["skin.css"],
+    "run_at": "document_idle",
+    "all_frames": false
+  }]
+}
