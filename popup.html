@@ -1,8 +1,14 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NetMirror Glass</title><link rel="stylesheet" href="popup.css"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>NetMirror Glass</title><link rel="stylesheet" href="glass-controls.css"><link rel="stylesheet" href="popup.css"></head>
 <body><header><span aria-hidden="true">✦</span><div><h1>NetMirror Glass</h1><p>A different view.</p></div></header>
-<label class="toggle">Apple TV–inspired skin <input id="enabled" type="checkbox" disabled></label>
+<label class="toggle">NetMirror skin <input id="enabled" type="checkbox" disabled></label>
+<section class="official-sites" aria-labelledby="official-heading">
+<h2 id="official-heading">Official websites</h2>
+<label class="toggle"><span>Netflix <small>Experimental</small></span><input id="netflixEnabled" type="checkbox" disabled></label>
+<label class="toggle">Prime Video <input id="primeEnabled" type="checkbox" disabled></label>
+</section>
+<fieldset id="glass-controls" disabled></fieldset>
 <p id="status" role="status">Checking your settings…</p>
 <a href="https://net77.cc/home" target="_blank" rel="noopener noreferrer">Open NetMirror ↗</a>
-<footer>Applies to net77.cc. Your original player and account stay with the site.</footer>
-<script src="popup.js"></script></body></html>
+<footer>Official sites ask for access when enabled. Netflix’s signed-in layout is experimental.</footer>
+<script src="glass.js"></script><script src="sites.js"></script><script src="popup.js"></script></body></html>

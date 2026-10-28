@@ -1,0 +1,11 @@
+{
+  "name": "netmirror-glass",
+  "version": "1.6.0",
+  "private": true,
+  "scripts": {
+    "test": "node tests/check.cjs && node tests/glass.cjs && node tests/sites.cjs && node tests/official.cjs && node tests/popup.cjs && node tests/prime-scroll.cjs"
+  },
+  "devDependencies": {
+    "playwright-core": "1.58.2"
+  }
+}

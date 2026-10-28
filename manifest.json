@@ -1,15 +1,45 @@
 {
   "manifest_version": 3,
   "name": "NetMirror Glass",
-  "version": "1.5.0",
-  "description": "An Apple TV-inspired glass skin for the NetMirror website. Keeps the original catalog and player.",
-  "permissions": ["storage"],
-  "action": {"default_title": "NetMirror Glass", "default_popup": "popup.html"},
-  "content_scripts": [{
-    "matches": ["https://net77.cc/*"],
-    "js": ["content.js"],
-    "css": ["skin.css"],
-    "run_at": "document_idle",
-    "all_frames": false
-  }]
+  "version": "1.6.0",
+  "description": "An Apple TV-inspired glass skin for NetMirror, with optional Netflix and Prime Video themes and adjustable glass.",
+  "permissions": [
+    "storage",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "https://www.netflix.com/*",
+    "https://netflix.com/*",
+    "https://www.primevideo.com/*",
+    "https://primevideo.com/*"
+  ],
+  "background": { "service_worker": "background.js" },
+  "action": {
+    "default_title": "NetMirror Glass",
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://net77.cc/*"
+      ],
+      "js": [
+        "glass.js",
+        "content.js"
+      ],
+      "css": [
+        "glass-controls.css",
+        "skin.css"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    },
+    {
+      "matches": ["https://net77.cc/*"],
+      "js": ["prime-scroll.js"],
+      "run_at": "document_idle",
+      "all_frames": false,
+      "world": "MAIN"
+    }
+  ]
 }

@@ -1,24 +1,27 @@
 // Local contract fixture; does not claim an authenticated NetMirror session.
-const { chromium } = require('../../REA repo/node_modules/playwright-core');
+const { chromium, launchOptions, screenshotPath } = require('./browser.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 const assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'manifest.json'), 'utf8'));
 assert.equal(manifest.manifest_version, 3);
-assert.deepEqual(manifest.permissions, ['storage']);
+assert.deepEqual(manifest.permissions, ['storage','scripting']);
 assert.deepEqual(manifest.content_scripts[0].matches, ['https://net77.cc/*']);
-for (const file of [...manifest.content_scripts[0].js, ...manifest.content_scripts[0].css, manifest.action.default_popup]) assert(fs.existsSync(path.join(root, file)));
-const script = fs.readFileSync(path.join(root,'content.js'),'utf8');
-const css = fs.readFileSync(path.join(root,'skin.css'),'utf8');
+assert.deepEqual(manifest.optional_host_permissions, ['https://www.netflix.com/*','https://netflix.com/*','https://www.primevideo.com/*','https://primevideo.com/*']);
+assert.equal(manifest.content_scripts[1].world, 'MAIN');
+assert.deepEqual(manifest.content_scripts[1].js, ['prime-scroll.js']);
+for (const file of [...manifest.content_scripts.flatMap(entry=>[...(entry.js||[]),...(entry.css||[])]), manifest.background.service_worker, manifest.action.default_popup]) assert(fs.existsSync(path.join(root, file)));
+const script = manifest.content_scripts[0].js.map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
+const css = manifest.content_scripts[0].css.map(file=>fs.readFileSync(path.join(root,file),'utf8')).join('\n');
 const mock = () => {
   const callbacks = [];
-  let enabled = true;
+  const prefs = {enabled:true};
   window.chrome = {
     storage: {
       local: {
-        get: async () => ({enabled}),
-        set: async value => { const oldValue = enabled; enabled = value.enabled; callbacks.forEach(fn => fn({enabled:{oldValue,newValue:enabled}},'local')); }
+        get: async defaults => ({...defaults,...prefs}),
+        set: async value => { const changes = {}; for (const [key,newValue] of Object.entries(value)) { changes[key]={oldValue:prefs[key],newValue}; prefs[key]=newValue; } callbacks.forEach(fn=>fn(changes,'local')); }
       },
       onChanged:{addListener:fn => callbacks.push(fn)}
     },
@@ -26,7 +29,7 @@ const mock = () => {
   };
 };
 (async () => {
-  const browser = await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true});
+  const browser = await chromium.launch(launchOptions);
   try {
     const page = await browser.newPage({viewport:{width:1280,height:900}});
     const errors = [];
@@ -100,7 +103,7 @@ const mock = () => {
       container.innerHTML='<div id="actionMenu"><div class="previewModal--info" style="background:#181818"><div class="previewModal--metadatAndControls" style="background:#181818"><button class="color-supplementary pop-btn">+</button></div></div></div><div id="modal-main" class="hide" style="background:#000000b2"><div class="modal-body"><div class="previewModal--info" style="background:#181818"><select class="season-box"><option>Season 1</option></select><div class="titleCardList--container episode-item">Episode</div></div></div></div>';
       document.body.append(container);
     });
-    assert.match(await page.locator('#actionMenu').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(32px\)/);
+    assert.match(await page.locator('#actionMenu').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(28px\)/);
     assert.equal(await page.locator('#actionMenu .previewModal--info').evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
     assert.equal(await page.locator('#actionMenu .previewModal--metadatAndControls').evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
     await page.evaluate(() => {
@@ -126,7 +129,7 @@ const mock = () => {
       assert.equal(await page.locator('#modal-main '+selector).evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
     }
     await page.locator('#modal-main').evaluate(el=>el.classList.remove('hide'));
-    assert.match(await page.locator('#modal-main .modal-body').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(32px\)/);
+    assert.match(await page.locator('#modal-main .modal-body').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(28px\)/);
     assert.equal(await page.locator('#modal-main .season-box').evaluate(el=>{const e=new WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:100});el.dispatchEvent(e);return e.defaultPrevented;}),false);
     await page.evaluate(() => {
       const hiddenMenu=document.createElement('div');hiddenMenu.setAttribute('role','menu');hiddenMenu.hidden=true;document.body.append(hiddenMenu);
@@ -199,11 +202,11 @@ const mock = () => {
     await page.evaluate(()=>document.querySelector('#player').classList.add('hide'));
     await page.waitForSelector('#nmg-rail',{state:'visible'});
     await page.setViewportSize({width:1440,height:900});
-    await page.screenshot({path:'/private/tmp/netmirror-glass-desktop.png'});
+    await page.screenshot({path:screenshotPath('netmirror-glass-desktop.png')});
     await page.setViewportSize({width:768,height:900});
-    await page.screenshot({path:'/private/tmp/netmirror-glass-tablet.png'});
+    await page.screenshot({path:screenshotPath('netmirror-glass-tablet.png')});
     await page.setViewportSize({width:390,height:844});
-    await page.screenshot({path:'/private/tmp/netmirror-glass-mobile.png'});
+    await page.screenshot({path:screenshotPath('netmirror-glass-mobile.png')});
     await page.evaluate(()=>chrome.storage.local.set({enabled:false}));
     await page.waitForSelector('#nmg-rail',{state:'detached'});
     assert.equal(await page.evaluate(()=>document.documentElement.hasAttribute('data-nmg')),false);

@@ -1,0 +1,36 @@
+/* Official sites have their own adapter. Never load NetMirror's layout rules here. */
+html[data-nmg-official] {
+  --nmg-official-surface:linear-gradient(135deg,#ffffff13,#ffffff04),rgba(26,31,38,var(--nmg-glass-opacity,.48));
+  --nmg-official-blur:blur(var(--nmg-glass-radius,28px)) saturate(145%);
+}
+html[data-nmg-official] [data-nmg-official-header] {
+  background:var(--nmg-official-surface) !important;
+  backdrop-filter:var(--nmg-official-blur);-webkit-backdrop-filter:var(--nmg-official-blur);
+  box-shadow:inset 0 -1px 0 #ffffff25,0 6px 24px #0003;
+}
+html[data-nmg-official="prime"] #pv-nav-container,
+html[data-nmg-official="prime"] [data-testid="pv-navigation-bar"] { background:transparent !important; }
+html[data-nmg-official="prime"] [data-testid="card-overlay"] {
+  background:var(--nmg-official-surface) !important;
+  backdrop-filter:var(--nmg-official-blur);-webkit-backdrop-filter:var(--nmg-official-blur);
+}
+html[data-nmg-official="prime"] :is([data-testid="left-arrow"],[data-testid="right-arrow"]),
+html[data-nmg-official="netflix"] .lolomoRow .slider .handle {
+  background:var(--nmg-official-surface) !important;
+  backdrop-filter:var(--nmg-official-blur);-webkit-backdrop-filter:var(--nmg-official-blur);
+}
+#nmg-official-controls { position:fixed;right:24px;bottom:24px;z-index:1000;color:#f5f5f7;font:14px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif; }
+#nmg-official-controls > button,#nmg-official-panel {
+  background:var(--nmg-official-surface);backdrop-filter:var(--nmg-official-blur);-webkit-backdrop-filter:var(--nmg-official-blur);
+  border:1px solid #ffffff40;box-shadow:inset 0 1px 0 #ffffff30,0 8px 32px #0004;border-radius:20px;
+}
+#nmg-official-controls button { color:#f5f5f7;cursor:pointer;font:600 13px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;padding:12px 16px; }
+#nmg-official-controls > button { float:right; }
+#nmg-official-panel { position:absolute;bottom:58px;right:0;width:290px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 110px);overflow:auto;padding:20px;box-sizing:border-box; }
+#nmg-official-panel .nmg-glass-controls { margin-top:0; }
+#nmg-official-controls .nmg-disable-site { border:1px solid #ffffff30;border-radius:12px;background:#ffffff10;width:100%; }
+#nmg-official-controls [hidden] { display:none !important; }
+#nmg-official-controls :focus-visible { outline:2px solid #a9e7f9;outline-offset:4px; }
+@media(max-width:600px) { #nmg-official-controls { right:16px;bottom:16px; } }
+@supports not (backdrop-filter:blur(1px)) { html[data-nmg-official] { --nmg-official-surface:#23343f; } }
+@media(prefers-reduced-transparency:reduce) { html[data-nmg-official] { --nmg-official-surface:#23343f;--nmg-official-blur:none; } }

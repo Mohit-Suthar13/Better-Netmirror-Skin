@@ -4,6 +4,7 @@
   globalThis.__netmirrorGlass = true;
   const root = document.documentElement;
   let enabled = true;
+  let glassPrefs = {...NMGGlass.defaults};
   let timer;
   let layout = '';
   // Provider identity is separate from layout-specific DOM behavior.
@@ -79,6 +80,7 @@
   }
   function removeUI() {
     root.removeAttribute('data-nmg');
+    NMGGlass.clear(root);
     root.removeAttribute('data-nmg-player');
     root.removeAttribute('data-nmg-layout');
     root.removeAttribute('data-nmg-scrolling');
@@ -194,15 +196,21 @@
       if (action === 'settings') {
         const panel = document.getElementById('nmg-settings');
         panel.hidden = !panel.hidden;
-        if (!panel.hidden) panel.querySelector('button').focus();
+        if (!panel.hidden) panel.querySelector('input').focus();
       }
     });
     const settings = document.createElement('section');
     settings.id = 'nmg-settings';
     settings.hidden = true;
     settings.setAttribute('data-nmg-owned', '');
-    settings.innerHTML = '<strong>NetMirror Glass</strong><p>Your catalog. A different view.</p><button type="button">Restore original appearance</button>';
-    settings.querySelector('button').addEventListener('click', () => chrome.storage.local.set({enabled:false}));
+    settings.innerHTML = '<strong>NetMirror Glass</strong><fieldset></fieldset><button type="button" data-restore>Restore original appearance</button>';
+    NMGGlass.mount(settings.querySelector('fieldset'), glassPrefs, patch => {
+      glassPrefs = NMGGlass.normalize({...glassPrefs, ...patch});
+      NMGGlass.apply(root, glassPrefs);
+      NMGGlass.sync(settings, glassPrefs);
+      chrome.storage.local.set(patch).catch(() => NMGGlass.error(settings));
+    });
+    settings.querySelector('[data-restore]').addEventListener('click', () => chrome.storage.local.set({enabled:false}));
     edge.append(handle, rail, settings);
     document.body.append(edge);
 
@@ -262,13 +270,23 @@
     const selecting = isVisible(document.querySelector('#modal-main:not(.hide)')) || isVisible(document.querySelector('[ranger="ranger_details_page"]'));
     root.toggleAttribute('data-nmg-detail', selecting);
     mount(header);
+    NMGGlass.apply(root, glassPrefs);
     const edge = document.getElementById('nmg-edge');
     document.getElementById('nmg-rail-toggle')?.setAttribute('aria-expanded', String(!selecting || edge?.hasAttribute('data-open')));
     status = playing ? 'Player open — skin controls hidden' : 'Glass skin active';
   }
-  chrome.storage.local.get({enabled:true}).then(prefs => { enabled = prefs.enabled !== false; update(); });
+  chrome.storage.local.get({enabled:true, ...NMGGlass.defaults}).then(prefs => { enabled = prefs.enabled !== false; glassPrefs = NMGGlass.normalize(prefs); update(); });
   chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'local' && changes.enabled) { enabled = changes.enabled.newValue !== false; update(); }
+    if (area !== 'local') return;
+    const patch = {};
+    for (const key of Object.keys(NMGGlass.defaults)) if (changes[key]) patch[key] = changes[key].newValue;
+    if (Object.keys(patch).length) {
+      glassPrefs = NMGGlass.normalize({...glassPrefs, ...patch});
+      if (root.hasAttribute('data-nmg')) NMGGlass.apply(root, glassPrefs);
+      const settings = document.getElementById('nmg-settings');
+      if (settings) NMGGlass.sync(settings, glassPrefs);
+    }
+    if (changes.enabled) { enabled = changes.enabled.newValue !== false; update(); }
   });
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (message.type === 'nmg-status') respond({enabled,status});
