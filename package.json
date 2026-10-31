@@ -1,6 +1,6 @@
 {
   "name": "netmirror-glass",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "private": true,
   "scripts": {
     "test": "node tests/check.cjs && node tests/glass.cjs && node tests/sites.cjs && node tests/official.cjs && node tests/popup.cjs && node tests/prime-scroll.cjs"

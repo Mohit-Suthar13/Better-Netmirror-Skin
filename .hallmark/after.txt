@@ -1,7 +1,5 @@
-glass-controls.css
-  WAIVED 24b :41 margin-top: -6px (off the 4px scale) on .nmg-glass-controls input[type="range"]::-webkit-slider-thumb
-skin.css
-  ANSWERED F24 :41 a hairline border under a wide soft shadow on html[data-nmg="glass"] #main-header, html[data-nmg-layout="prime"] [data-…
-sloplint: 0 FAIL, 0 WARN, 1 WAIVED, 1 ANSWERED across 5 file(s).
-render tier not run: no puppeteer-core found locally, globally or via HALLMARK_PUPPETEER
-kept: links 1/1, script hooks 3/3; before 182 FAIL, 66 REFLEX, now 0 FAIL, 0 REFLEX
+1.8.0 — 2026-10-30
+sloplint: 0 FAIL, 0 WARN, 1 WAIVED, 1 ANSWERED across 5 files.
+Render tier unavailable: puppeteer-core absent. Playwright fixtures and native Chrome used.
+Finish review: subagent; two interaction findings resolved and regression checked.
+Live horizontal input limitation: native driver emitted deltaX=0, deltaY=0. Browser fixtures verify the adapter.

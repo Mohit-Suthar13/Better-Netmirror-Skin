@@ -1,6 +1,44 @@
 [
   {
     "date": "2026-10-30",
+    "version": "1.8.0",
+    "mode": "redesign",
+    "depth": "polish",
+    "scope": "app",
+    "theme": "project",
+    "entry": "content.js",
+    "prompt": "Animate provider and sidebar selection; hide sidebar until proximity; smooth Prime trackpad input and contain browser history gestures.",
+    "signature": "One moving selection highlight in each functional glass navigation control",
+    "files": [
+      "content.js",
+      "skin.css",
+      "prime-scroll.js"
+    ],
+    "verification": {
+      "regression": "All six suites passed; navigation and glass suites re-passed after finish fixes",
+      "static": "0 FAIL / 0 WARN; existing thumb-spacing waiver and glass-edge answer retained",
+      "finish_review": "subagent, fix: two findings resolved \u2014 reliable sidebar dismissal and transient Services selection restoration",
+      "live": [
+        "1.8.0 reloaded from source folder",
+        "Both catalog tabs refreshed",
+        "Prime to Netflix and Netflix to Prime native switching",
+        "Hidden sidebar proximity reveal; Settings selected circle; Escape settings and rail dismissal"
+      ],
+      "limits": [
+        "Hallmark Puppeteer renderer unavailable; Playwright and native Chrome used",
+        "Mac native driver emits zero horizontal wheel deltas; actual trackpad feel unverified",
+        "No before capture or live mobile validation",
+        "No authenticated official-site or playback validation"
+      ]
+    },
+    "captures": [
+      "/private/tmp/nmg-prime-1.8.png",
+      "/private/tmp/nmg-netflix-1.8.png",
+      "/private/tmp/nmg-sidebar-1.8.png"
+    ]
+  },
+  {
+    "date": "2026-10-30",
     "mode": "redesign",
     "depth": "restyle",
     "scope": "app",

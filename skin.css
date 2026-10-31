@@ -141,37 +141,40 @@ html[data-nmg="glass"] #nmg-rail {
   display:flex;flex-direction:column;gap:12px;padding:12px 8px;border:1px solid var(--nmg-edge);border-radius:32px;
   background:var(--nmg-surface);-webkit-backdrop-filter:var(--nmg-blur);backdrop-filter:var(--nmg-blur);box-shadow:var(--nmg-shadow);
 }
-html[data-nmg="glass"] #nmg-rail :is(button,a) { display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:var(--nmg-ink);cursor:pointer;text-decoration:none; }
-html[data-nmg="glass"] #nmg-rail a { background:var(--nmg-ink);color:var(--nmg-on-light); }
-html[data-nmg="glass"] #nmg-rail button:hover,
-html[data-nmg="glass"] #nmg-rail button[aria-expanded="true"] { background:var(--nmg-hover); }
-html[data-nmg="glass"] #nmg-rail button:active { background:var(--nmg-pressed); }
+html[data-nmg="glass"] #nmg-rail :is(button,a) { position:relative;z-index:1;display:grid;place-items:center;width:44px;height:44px;border:0;border-radius:50%;background:transparent;color:var(--nmg-ink);cursor:pointer;text-decoration:none; }
+html[data-nmg="glass"] #nmg-rail :is(button,a):hover:not([data-selected]) { background:var(--nmg-hover); }
+html[data-nmg="glass"] #nmg-rail :is(button,a):active:not([data-selected]) { background:var(--nmg-pressed); }
+html[data-nmg="glass"] #nmg-rail [data-selected] { color:var(--nmg-on-light); }
+html[data-nmg="glass"] .nmg-selection { position:absolute;top:0;left:0;z-index:0;pointer-events:none;border-radius:22px;background:var(--nmg-ink); }
+html[data-nmg="glass"] .nmg-selection[data-animate] { transition:transform 220ms cubic-bezier(.22,.68,0,1); }
 html[data-nmg="glass"] #nmg-dock {
   position:fixed;bottom:16px;left:calc(50% + 32px);transform:translateX(-50%);z-index:100;
   display:flex;gap:4px;padding:8px;max-width:calc(100% - 120px);overflow-x:auto;scrollbar-width:none;
   border-radius:28px;border:1px solid var(--nmg-edge);background:var(--nmg-surface);
   -webkit-backdrop-filter:var(--nmg-blur);backdrop-filter:var(--nmg-blur);box-shadow:var(--nmg-shadow);
 }
-html[data-nmg="glass"] #nmg-dock button { border:0;border-radius:22px;min-width:112px;min-height:44px;padding:12px 20px;font:600 13px var(--nmg-font);white-space:nowrap;color:var(--nmg-muted);background:transparent;cursor:pointer; }
+html[data-nmg="glass"] #nmg-dock button { position:relative;z-index:1;flex-shrink:0;border:0;border-radius:22px;min-width:112px;min-height:44px;padding:12px 20px;font:600 13px var(--nmg-font);white-space:nowrap;color:var(--nmg-muted);background:transparent;cursor:pointer; }
 html[data-nmg="glass"] #nmg-dock [data-provider="nf"] { color:var(--nmg-netflix); }
 html[data-nmg="glass"] #nmg-dock [data-provider="pv"] { color:var(--nmg-prime); }
-html[data-nmg="glass"] #nmg-dock button:hover { background:var(--nmg-hover); }
-html[data-nmg="glass"] #nmg-dock button:active { background:var(--nmg-pressed); }
-html[data-nmg="glass"] #nmg-dock button:disabled { cursor:default;background:var(--nmg-ink);color:var(--nmg-on-light); }
+html[data-nmg="glass"] #nmg-dock button:hover:not([data-selected]) { background:var(--nmg-hover); }
+html[data-nmg="glass"] #nmg-dock button:active:not([data-selected]) { background:var(--nmg-pressed); }
+html[data-nmg="glass"] #nmg-dock button:disabled { cursor:default; }
+html[data-nmg="glass"] #nmg-dock button[data-selected] { color:var(--nmg-on-light); }
 html[data-nmg="glass"] #nmg-dock[aria-busy="true"] { cursor:progress; }
 html[data-nmg="glass"] .nmg-current-provider { display:flex;align-items:center;padding:0 16px;font:600 14px var(--nmg-font);color:var(--nmg-accent); }
 
-/* A narrow edge reveals the rail only while a title is selected. */
+/* The catalog stays clear until the pointer or keyboard reaches the left edge. */
 html[data-nmg="glass"] #nmg-edge { position:fixed;left:0;top:28%;width:28px;height:310px;z-index:1100; }
-html[data-nmg="glass"] #nmg-edge[data-open],
-html[data-nmg="glass"] #nmg-edge:focus-within,
-html[data-nmg="glass"]:not([data-nmg-detail]) #nmg-edge { width:94px; }
+html[data-nmg="glass"] #nmg-edge[data-open] { width:94px; }
 html[data-nmg="glass"] #nmg-edge #nmg-rail { position:absolute;top:0;left:14px;margin:0;transition:transform 240ms ease,opacity 160ms ease; }
-html[data-js-nmg][data-nmg="glass"][data-nmg-detail] #nmg-edge:not([data-open]):not(:focus-within) #nmg-rail { transform:translateX(calc(-100% - 18px));opacity:0;pointer-events:none; }
+html[data-js-nmg][data-nmg="glass"] #nmg-edge:not([data-open]) #nmg-rail { transform:translateX(calc(-100% - 18px));opacity:0;pointer-events:none; }
 html[data-nmg="glass"] #nmg-rail-toggle { position:absolute;left:0;top:0;width:28px;height:100%;padding:0;border:0;background:transparent;cursor:pointer;color:var(--nmg-ink); }
 html[data-nmg="glass"] #nmg-rail-toggle::after { content:"";position:absolute;left:4px;top:calc(50% - 28px);width:4px;height:56px;border-radius:8px;background:var(--nmg-accent); }
-html[data-nmg="glass"] #nmg-edge[data-open] #nmg-rail-toggle::after,
-html[data-nmg="glass"]:not([data-nmg-detail]) #nmg-rail-toggle { display:none; }
+html[data-nmg="glass"] #nmg-edge[data-open] #nmg-rail-toggle::after { display:none; }
+
+/* Stop horizontal catalog overscroll from becoming Chrome Back/Forward. */
+html[data-nmg="glass"][data-nmg-layout="prime"]:not([data-nmg-player]),
+html[data-nmg="glass"][data-nmg-layout="prime"]:not([data-nmg-player]) body { overscroll-behavior-x:none; }
 
 html[data-nmg="glass"] #nmg-settings {
   position:fixed;z-index:1101;top:min(22vh,160px);left:88px;width:320px;padding:24px;box-sizing:border-box;
@@ -242,8 +245,7 @@ html[data-nmg="glass"] .dlappmsg .msg-impo { border-color:var(--nmg-rule) !impor
   html[data-nmg="glass"] .billboard-links button { font-size:12px !important;padding:12px !important; }
   html[data-nmg="glass"] :is(.rowTitle,.row-header-title) { font-size:20px !important; }
   html[data-nmg="glass"] #nmg-edge { height:280px; }
-  html[data-nmg="glass"] #nmg-edge[data-open],html[data-nmg="glass"] #nmg-edge:focus-within,
-  html[data-nmg="glass"]:not([data-nmg-detail]) #nmg-edge { width:66px; }
+  html[data-nmg="glass"] #nmg-edge[data-open] { width:66px; }
   html[data-nmg="glass"] #nmg-edge #nmg-rail { left:6px;padding:8px 4px; }
   html[data-nmg="glass"] #nmg-rail :is(a,button) { width:40px;height:40px; }
   html[data-nmg="glass"] #nmg-dock { left:calc(50% + 24px);max-width:calc(100% - 84px); }
@@ -258,6 +260,7 @@ html[data-nmg="glass"] .dlappmsg .msg-impo { border-color:var(--nmg-rule) !impor
 }
 @media(prefers-reduced-motion:reduce) {
   html[data-nmg="glass"] #nmg-edge #nmg-rail { transition:none; }
+  html[data-nmg="glass"] .nmg-selection[data-animate] { transition:none; }
   html[data-nmg="glass"] .billboard-links button:active { transform:none; }
 }
 @supports not (backdrop-filter:blur(1px)) {

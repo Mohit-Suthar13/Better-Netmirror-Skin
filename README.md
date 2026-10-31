@@ -32,10 +32,11 @@ Changes apply live to supported glass surfaces across enabled sites without fadi
 
 ## Design and behavior
 
-- On NetMirror, Netflix and Prime Video catalog rows support left/right trackpad gestures or Shift+mouse wheel. Prime delegates movement to its existing Swiper carousel, including its boundaries and animation. Ordinary up/down gestures scroll the page, and existing arrow buttons still work.
+- On NetMirror, Netflix and Prime Video catalog rows support left/right trackpad gestures or Shift+mouse wheel. Prime follows trackpad deltas through its existing Swiper carousel and contains outward momentum at both ends, preventing Chrome history navigation. Ordinary up/down gestures scroll the page, and existing arrow buttons still work.
 - Hover previews and title dialogs use translucent glass, including metadata, episodes, recommendations and About sections. Original playback iframe contents remain unchanged.
 - Continuous charcoal canvas, full-width featured scenes, floating shortcut rail, frosted controls, system typography and provider dock inspired by the supplied screenshots.
 - Actual NetMirror posters and catalog. No invented movie data or substitute login.
+- The sidebar stays tucked away until the pointer reaches the left edge, with keyboard and touch access. Its selected circle and the bottom provider pill move briefly between choices; reduced motion removes the travel.
 - Shortcut controls delegate to the site's existing search, watchlist and provider controls. Changing provider retains the site's existing reload behavior.
 - Existing detail dialogs, episodes, pagination and player handlers are preserved. Player iframe contents are not skinned.
 - Theme attributes and added controls are removed on disable. Original source nodes are not moved or replaced.
@@ -108,3 +109,12 @@ Official websites use separate opt-in adapters and exact optional host permissio
 - Consolidated the accumulated skin CSS while preserving native nodes, catalog geometry, hero clipping, scrolling, provider delegation, and player exclusions. No additional permissions.
 - All six unchanged regression suites passed. Hallmark static review reported no open failures or reflex findings. Its Puppeteer render tier was unavailable; Playwright fixture screenshots and live Chrome inspection were used instead. Independent finish review found one control-contrast issue, now resolved.
 - Reloaded version 1.7.0 in the user’s Chrome and verified the Netflix and Prime layouts on NetMirror, native switching, settings, and the popup. Existing playback tabs were left untouched and receive the new styles when refreshed. Authenticated official Netflix/Prime pages and playback were not exercised in this update.
+
+
+### 1.8.0 — navigation motion and smooth Prime scrolling (2026-10-30)
+- Added a short sliding selection pill to provider switching and one moving selection circle in the sidebar, with stable labels and reduced-motion support.
+- Hid the sidebar on catalog and title pages until left-edge hover, keyboard focus or touch. Added reliable Hide, outside-click and Escape dismissal; settings and native provider pickers restore the previous selection when closed.
+- Replaced Prime’s one-step-per-gesture limit with continuous, frame-batched Swiper movement. Small deltas and reversals respond immediately; both row edges consume outward momentum. Scoped horizontal overscroll suppression to the Prime catalog so sideways input cannot become browser history navigation. Vertical scrolling, zoom, native arrows and playback guards remain.
+- All six fixture suites passed. Navigation and glass suites passed again after the two Hallmark finish-review fixes. Hallmark static scan: 0 FAIL / 0 WARN, retaining the documented thumb-offset waiver and glass-edge answer.
+- Reloaded 1.8.0 in Chrome and refreshed both catalog tabs. Live checks cover Netflix/Prime switching, proximity reveal, Settings selection and Escape dismissal. Saved preferences were preserved.
+- Live trackpad feel could not be verified: the Mac automation driver emitted a zero horizontal delta in a separate diagnostic page. Continuous deltas, reversal, lifecycle guards, native-arrow interoperation and edge containment are covered by browser fixtures. No physical trackpad or live mobile validation; official-site adapters and playback were unchanged.

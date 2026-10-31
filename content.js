@@ -15,8 +15,16 @@
   };
   const currentProvider = () => Object.values(providers).find(provider => provider.layout === layout);
   let switchTimer;
+  let switchStartTimer;
   let providerObserver;
+  let pickerObserver;
+  let pickerTimer;
   let railTimer;
+  let closeSettings;
+  let closeRail;
+  let syncRailRoute;
+  const selectionObservers = new Set();
+  const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
   let status = 'Waiting for NetMirror';
   let scrollTimer;
   let hoveredScroller;
@@ -78,6 +86,37 @@
     const target = document.querySelector(selector);
     if (target) target.click();
   }
+  // One shared highlight moves between controls without moving their labels.
+  function selectionMarker(nav, initial) {
+    const marker = document.createElement('span');
+    marker.className = 'nmg-selection';
+    marker.setAttribute('aria-hidden', 'true');
+    nav.prepend(marker);
+    let selected;
+    const measure = () => {
+      if (!selected?.isConnected) return;
+      marker.style.width = `${selected.offsetWidth}px`;
+      marker.style.height = `${selected.offsetHeight}px`;
+      marker.style.transform = `translate(${selected.offsetLeft}px, ${selected.offsetTop}px)`;
+    };
+    const select = button => {
+      if (!button) return;
+      selected?.removeAttribute('data-selected');
+      selected = button;
+      selected.setAttribute('data-selected', '');
+      measure();
+    };
+    select(initial);
+    // Initial placement and responsive resizing should not look like a selection.
+    const observer = new ResizeObserver(() => {
+      marker.removeAttribute('data-animate');
+      measure();
+      requestAnimationFrame(() => { if (marker.isConnected) marker.setAttribute('data-animate', ''); });
+    });
+    observer.observe(nav);
+    selectionObservers.add(observer);
+    return select;
+  }
   function removeUI() {
     root.removeAttribute('data-nmg');
     root.removeAttribute('data-js-nmg');
@@ -91,7 +130,14 @@
     document.querySelectorAll('[data-nmg-header]').forEach(el => el.removeAttribute('data-nmg-header'));
     document.querySelectorAll('[data-nmg-brand]').forEach(el => el.removeAttribute('data-nmg-brand'));
     clearTimeout(switchTimer);
+    clearTimeout(switchStartTimer);
     clearTimeout(railTimer);
+    clearTimeout(pickerTimer);
+    pickerObserver?.disconnect();
+    pickerObserver = null;
+    selectionObservers.forEach(observer => observer.disconnect());
+    selectionObservers.clear();
+    closeSettings = closeRail = syncRailRoute = null;
     providerObserver?.disconnect();
     providerObserver = null;
     document.querySelectorAll('[data-nmg-owned]').forEach(el => el.remove());
@@ -117,37 +163,42 @@
     return [...document.querySelectorAll('.ott-item')].find(item =>
       name.test([item.textContent, item.getAttribute('aria-label'), ...[...item.querySelectorAll('img')].map(img => `${img.alt} ${img.getAttribute('src')}`)].join(' ')));
   }
-  function switchProvider(id, button, dock, label) {
+  function switchProvider(id, button, dock, label, select) {
     if (dock.getAttribute('aria-busy') === 'true') return;
     const reset = () => {
       clearTimeout(switchTimer);
+      clearTimeout(switchStartTimer);
       providerObserver?.disconnect();
       providerObserver = null;
       dock.removeAttribute('aria-busy');
-      button.textContent = label;
       button.removeAttribute('aria-label');
+      select(dock.querySelector('[aria-current="true"]'));
     };
     dock.setAttribute('aria-busy', 'true');
-    button.textContent = 'Switching…';
     button.setAttribute('aria-label', `Switching to ${label}`);
+    select(button);
     switchTimer = setTimeout(reset, 8000);
-    const native = document.querySelector(`.setOTT[data-ott="${id}"]`);
-    if (native) { native.click(); return; }
-    if (layout !== 'prime') { reset(); return; }
-    // React mounts its choices only after the native picker opens.
-    const select = () => {
-      const item = primeProvider(id);
-      if (!item) return false;
-      providerObserver?.disconnect();
-      providerObserver = null;
-      item.click();
-      return true;
-    };
-    if (select()) return;
-    providerObserver = new MutationObserver(select);
-    providerObserver.observe(document.body, {childList:true,subtree:true});
-    openServices();
-    select();
+    // Let the short selection transition finish before the native page changes.
+    switchStartTimer = setTimeout(() => {
+      if (!dock.isConnected || !enabled) return;
+      const native = document.querySelector(`.setOTT[data-ott="${id}"]`);
+      if (native) { native.click(); return; }
+      if (layout !== 'prime') { reset(); return; }
+      // React mounts its choices only after the native picker opens.
+      const choose = () => {
+        const item = primeProvider(id);
+        if (!item) return false;
+        providerObserver?.disconnect();
+        providerObserver = null;
+        item.click();
+        return true;
+      };
+      if (choose()) return;
+      providerObserver = new MutationObserver(choose);
+      providerObserver.observe(document.body, {childList:true,subtree:true});
+      openServices();
+      choose();
+    }, reduceMotion() ? 0 : 220);
   }
   function mount(header) {
     if (document.getElementById('nmg-rail')) return;
@@ -164,41 +215,72 @@
       clearTimeout(railTimer);
       edge.toggleAttribute('data-open', open);
       handle.setAttribute('aria-expanded', String(open));
-      handle.setAttribute('aria-label', 'Show shortcuts');
+      handle.setAttribute('aria-label', open ? 'Hide shortcuts' : 'Show shortcuts');
     };
     edge.addEventListener('pointerenter', event => { if (event.pointerType !== 'touch') setRailOpen(true); });
     edge.addEventListener('pointerleave', () => {
       railTimer = setTimeout(() => {
-        if (!edge.matches(':focus-within') && settings.hidden) setRailOpen(false);
-      }, 450);
+        if (!edge.querySelector(':focus-visible') && settings.hidden) setRailOpen(false);
+      }, 320);
     });
     edge.addEventListener('focusin', () => setRailOpen(true));
     edge.addEventListener('focusout', () => {
       railTimer = setTimeout(() => {
-        if (!edge.matches(':hover, :focus-within') && settings.hidden) setRailOpen(false);
-      }, 450);
+        if (!edge.matches(':hover') && !edge.querySelector(':focus-visible') && settings.hidden) setRailOpen(false);
+      }, 320);
     });
     // The edge handle remains reachable by touch and keyboard when the rail hides.
-    handle.addEventListener('click', () => setRailOpen(true));
+    let openOnPress = false;
+    handle.addEventListener('pointerdown', () => { openOnPress = edge.hasAttribute('data-open'); });
+    handle.addEventListener('click', event => setRailOpen(event.detail ? !openOnPress : !edge.hasAttribute('data-open')));
     const rail = document.createElement('nav');
     rail.id = 'nmg-rail';
     rail.setAttribute('data-nmg-owned', '');
     rail.setAttribute('aria-label', 'NetMirror shortcuts');
-    rail.innerHTML = `<a href="/home" title="Home" aria-label="Home">${svg('home')}</a>
+    rail.innerHTML = `<a href="/home" data-action="home" title="Home" aria-label="Home">${svg('home')}</a>
       <button type="button" data-action="search" title="Search" aria-label="Search">${svg('search')}</button>
       <button type="button" data-action="services" title="Streaming services" aria-label="Streaming services">${svg('grid')}</button>
       <button type="button" data-action="list" title="My List" aria-label="My List">${svg('list')}</button>
       <button type="button" data-action="settings" title="Skin settings" aria-label="Skin settings" aria-controls="nmg-settings" aria-expanded="false">${svg('settings')}</button>`;
+    let selectRail;
+    let previousAction = 'home';
     rail.addEventListener('click', event => {
-      const action = event.target.closest('[data-action]')?.dataset.action;
+      const button = event.target.closest('[data-action]');
+      const action = button?.dataset.action;
+      if (!action) return;
+      clearTimeout(pickerTimer);
+      pickerObserver?.disconnect();
+      pickerObserver = null;
+      if (action !== 'settings' && action !== 'services') previousAction = action;
+      selectRail(button);
       if (action === 'search') { proxy(layout === 'prime' ? '#root a[href="/search"]' : '#main-header .searchTab'); document.querySelector('#searchInput')?.focus(); }
-      if (action === 'services') openServices();
+      if (action === 'services') {
+        // Services is a temporary picker, not a catalog destination.
+        let opened = false;
+        const restore = () => {
+          clearTimeout(pickerTimer);
+          pickerObserver?.disconnect();
+          pickerObserver = null;
+          selectRail(rail.querySelector(`[data-action="${previousAction}"]`));
+        };
+        const syncPicker = () => {
+          const visible = [...document.querySelectorAll(layout === 'prime' ? '.ott-item' : '.setOTT')].some(isVisible);
+          if (visible) { opened = true; clearTimeout(pickerTimer); }
+          else if (opened) restore();
+        };
+        pickerObserver = new MutationObserver(syncPicker);
+        pickerObserver.observe(document.body, {subtree:true,childList:true,attributes:true,attributeFilter:['class','style','hidden']});
+        pickerTimer = setTimeout(restore, 8000);
+        openServices();
+        syncPicker();
+      }
       if (action === 'list') proxy(layout === 'prime' ? '#root a[href="/watch-list"]' : '#main-header .navigation-tab .mylist');
       if (action === 'settings') {
         const panel = document.getElementById('nmg-settings');
-        panel.hidden = !panel.hidden;
-        rail.querySelector('[data-action="settings"]').setAttribute('aria-expanded', String(!panel.hidden));
-        if (!panel.hidden) panel.querySelector('input').focus();
+        if (!panel.hidden) { closeSettings(); return; }
+        panel.hidden = false;
+        button.setAttribute('aria-expanded', 'true');
+        panel.querySelector('input').focus();
       }
     });
     const settings = document.createElement('section');
@@ -207,12 +289,14 @@
     settings.setAttribute('data-nmg-owned', '');
     settings.setAttribute('aria-label', 'Glass appearance');
     settings.innerHTML = '<div class="nmg-settings-heading"><strong>NetMirror Glass</strong><button type="button" data-close-settings aria-label="Close glass settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><fieldset></fieldset><button type="button" data-restore>Restore original appearance</button>';
-    settings.querySelector('[data-close-settings]').addEventListener('click', () => {
+    closeSettings = () => {
       settings.hidden = true;
       const trigger = rail.querySelector('[data-action="settings"]');
       trigger.setAttribute('aria-expanded', 'false');
+      selectRail(rail.querySelector(`[data-action="${previousAction}"]`));
       trigger.focus();
-    });
+    };
+    settings.querySelector('[data-close-settings]').addEventListener('click', () => closeSettings());
     NMGGlass.mount(settings.querySelector('fieldset'), glassPrefs, patch => {
       glassPrefs = NMGGlass.normalize({...glassPrefs, ...patch});
       NMGGlass.apply(root, glassPrefs);
@@ -222,6 +306,19 @@
     settings.querySelector('[data-restore]').addEventListener('click', () => chrome.storage.local.set({enabled:false}));
     edge.append(handle, rail, settings);
     document.body.append(edge);
+    closeRail = () => {
+      if (rail.contains(document.activeElement)) handle.focus({preventScroll:true});
+      setRailOpen(false);
+    };
+    selectRail = selectionMarker(rail);
+    let railPath;
+    syncRailRoute = () => {
+      if (railPath === location.pathname) return;
+      railPath = location.pathname;
+      previousAction = /\/search(?:\/|$)/.test(railPath) ? 'search' : /\/watch-list(?:\/|$)/.test(railPath) ? 'list' : 'home';
+      if (settings.hidden) selectRail(rail.querySelector(`[data-action="${previousAction}"]`));
+    };
+    syncRailRoute();
 
     const label = document.createElement('span');
     label.id = 'nmg-heading';
@@ -236,6 +333,7 @@
     dock.id = 'nmg-dock';
     dock.setAttribute('aria-label', 'Streaming providers');
     dock.setAttribute('data-nmg-owned', '');
+    let selectDock;
     // Only expose service choices actually present in the source page.
     for (const [id, provider] of Object.entries(providers)) {
       const labelText = provider.name;
@@ -247,7 +345,7 @@
       if (provider.layout === layout) {
         button.setAttribute('aria-current', 'true');
         button.disabled = true;
-      } else button.addEventListener('click', () => switchProvider(id, button, dock, labelText));
+      } else button.addEventListener('click', () => switchProvider(id, button, dock, labelText, selectDock));
       dock.append(button);
     }
     const allServices = document.createElement('button');
@@ -257,6 +355,7 @@
     allServices.addEventListener('click', openServices);
     dock.append(allServices);
     document.body.append(dock);
+    selectDock = selectionMarker(dock, dock.querySelector('[aria-current="true"]'));
   }
   function update() {
     const challenge = /\/verify|\/cdn-cgi\//.test(location.pathname) || /just a moment/i.test(document.title);
@@ -280,9 +379,10 @@
     const selecting = isVisible(document.querySelector('#modal-main:not(.hide)')) || isVisible(document.querySelector('[ranger="ranger_details_page"]'));
     root.toggleAttribute('data-nmg-detail', selecting);
     mount(header);
+    syncRailRoute?.();
     NMGGlass.apply(root, glassPrefs);
     const edge = document.getElementById('nmg-edge');
-    document.getElementById('nmg-rail-toggle')?.setAttribute('aria-expanded', String(!selecting || edge?.hasAttribute('data-open')));
+    document.getElementById('nmg-rail-toggle')?.setAttribute('aria-expanded', String(!!edge?.hasAttribute('data-open')));
     status = playing ? 'Player open — skin controls hidden' : 'Glass skin active';
   }
   chrome.storage.local.get({enabled:true, ...NMGGlass.defaults}).then(prefs => { enabled = prefs.enabled !== false; glassPrefs = NMGGlass.normalize(prefs); update(); });
@@ -301,6 +401,10 @@
   chrome.runtime.onMessage.addListener((message, sender, respond) => {
     if (message.type === 'nmg-status') respond({enabled,status});
   });
+  document.addEventListener('pointerdown', event => {
+    const edge = document.getElementById('nmg-edge');
+    if (edge?.hasAttribute('data-open') && !edge.contains(event.target) && document.getElementById('nmg-settings')?.hidden) closeRail?.();
+  }, {passive:true});
   // Existing nodes, click handlers, source attributes, and player are never replaced.
   new MutationObserver(records => {
     if (!records.some(r => !r.target.closest?.('[data-nmg-owned]') && (r.type === 'childList' || r.target.id === 'player' || r.target.id === 'modal-main' || r.target.classList?.contains('modal-main')))) return;
@@ -311,10 +415,7 @@
     if (event.key !== 'Escape' || event.repeat || event.defaultPrevented || !enabled || !root.hasAttribute('data-nmg') || document.fullscreenElement || isPlaying()) return;
     const panel = document.getElementById('nmg-settings');
     if (panel && !panel.hidden) {
-      panel.hidden = true;
-      const trigger = document.querySelector('#nmg-rail [data-action="settings"]');
-      trigger?.setAttribute('aria-expanded', 'false');
-      trigger?.focus();
+      closeSettings?.();
       event.preventDefault();
       event.stopImmediatePropagation();
       return;
@@ -329,7 +430,14 @@
       close ||= [...document.querySelectorAll('#root [data-nmg-header] a[href]')].find(link => link.getAttribute('href') === location.pathname)
         || document.querySelector('#root a[ranger="ranger_header_home"]');
     }
-    if (!close) return;
+    if (!close) {
+      const edge = document.getElementById('nmg-edge');
+      if (edge?.hasAttribute('data-open') && edge.contains(document.activeElement)) {
+        closeRail?.();
+        event.preventDefault();
+      }
+      return;
+    }
     event.preventDefault();
     event.stopImmediatePropagation();
     close.click();
