@@ -80,6 +80,7 @@
   }
   function removeUI() {
     root.removeAttribute('data-nmg');
+    root.removeAttribute('data-js-nmg');
     NMGGlass.clear(root);
     root.removeAttribute('data-nmg-player');
     root.removeAttribute('data-nmg-layout');
@@ -187,7 +188,7 @@
       <button type="button" data-action="search" title="Search" aria-label="Search">${svg('search')}</button>
       <button type="button" data-action="services" title="Streaming services" aria-label="Streaming services">${svg('grid')}</button>
       <button type="button" data-action="list" title="My List" aria-label="My List">${svg('list')}</button>
-      <button type="button" data-action="settings" title="Skin settings" aria-label="Skin settings">${svg('settings')}</button>`;
+      <button type="button" data-action="settings" title="Skin settings" aria-label="Skin settings" aria-controls="nmg-settings" aria-expanded="false">${svg('settings')}</button>`;
     rail.addEventListener('click', event => {
       const action = event.target.closest('[data-action]')?.dataset.action;
       if (action === 'search') { proxy(layout === 'prime' ? '#root a[href="/search"]' : '#main-header .searchTab'); document.querySelector('#searchInput')?.focus(); }
@@ -196,6 +197,7 @@
       if (action === 'settings') {
         const panel = document.getElementById('nmg-settings');
         panel.hidden = !panel.hidden;
+        rail.querySelector('[data-action="settings"]').setAttribute('aria-expanded', String(!panel.hidden));
         if (!panel.hidden) panel.querySelector('input').focus();
       }
     });
@@ -203,7 +205,14 @@
     settings.id = 'nmg-settings';
     settings.hidden = true;
     settings.setAttribute('data-nmg-owned', '');
-    settings.innerHTML = '<strong>NetMirror Glass</strong><fieldset></fieldset><button type="button" data-restore>Restore original appearance</button>';
+    settings.setAttribute('aria-label', 'Glass appearance');
+    settings.innerHTML = '<div class="nmg-settings-heading"><strong>NetMirror Glass</strong><button type="button" data-close-settings aria-label="Close glass settings"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div><fieldset></fieldset><button type="button" data-restore>Restore original appearance</button>';
+    settings.querySelector('[data-close-settings]').addEventListener('click', () => {
+      settings.hidden = true;
+      const trigger = rail.querySelector('[data-action="settings"]');
+      trigger.setAttribute('aria-expanded', 'false');
+      trigger.focus();
+    });
     NMGGlass.mount(settings.querySelector('fieldset'), glassPrefs, patch => {
       glassPrefs = NMGGlass.normalize({...glassPrefs, ...patch});
       NMGGlass.apply(root, glassPrefs);
@@ -263,6 +272,7 @@
     if (layout !== nextLayout) removeUI();
     layout = nextLayout;
     root.setAttribute('data-nmg', 'glass');
+    root.setAttribute('data-js-nmg', '');
     root.setAttribute('data-nmg-layout', layout);
     header.setAttribute('data-nmg-header', '');
     const playing = isPlaying();
@@ -302,7 +312,9 @@
     const panel = document.getElementById('nmg-settings');
     if (panel && !panel.hidden) {
       panel.hidden = true;
-      document.querySelector('#nmg-rail [data-action="settings"]')?.focus();
+      const trigger = document.querySelector('#nmg-rail [data-action="settings"]');
+      trigger?.setAttribute('aria-expanded', 'false');
+      trigger?.focus();
       event.preventDefault();
       event.stopImmediatePropagation();
       return;

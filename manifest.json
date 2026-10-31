@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "NetMirror Glass",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "description": "An Apple TV-inspired glass skin for NetMirror, with optional Netflix and Prime Video themes and adjustable glass.",
   "permissions": [
     "storage",

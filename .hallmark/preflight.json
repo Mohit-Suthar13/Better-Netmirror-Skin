@@ -1,0 +1,31 @@
+{
+  "scanned": "2026-10-30",
+  "scope": "app",
+  "mode": "redesign",
+  "depth": "restyle",
+  "findings": {
+    "framework": "Manifest V3 extension; manifest.json:1; no app framework",
+    "fonts": "Existing system sans stack; glass-controls.css:6",
+    "palette": "Existing charcoal canvas and translucent neutral panels; skin.css:6",
+    "material": "Live NetMirror artwork and catalog, native controls; source content retained",
+    "routes": [
+      "NetMirror Netflix catalog",
+      "NetMirror Prime catalog",
+      "Extension popup",
+      "Official site decorative adapters"
+    ]
+  },
+  "preserve": [
+    "native DOM and handlers",
+    "catalog geometry",
+    "site permissions",
+    "saved transparency and blur",
+    "charcoal and system typography"
+  ],
+  "introduce": [
+    "shared glass surface tokens",
+    "quieter navigation and provider selection",
+    "accessible switches and ranges",
+    "settings close button and expanded state"
+  ]
+}

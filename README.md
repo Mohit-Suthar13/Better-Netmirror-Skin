@@ -43,7 +43,7 @@ Changes apply live to supported glass surfaces across enabled sites without fadi
 
 ## Testing
 
-With Node.js and Google Chrome installed, run `npm install && npm test` from this folder. The six suites use isolated fixtures. Set `CHROME_PATH` to a Chrome executable if it is installed in a custom location. Review screenshots are written to the system temporary directory.
+With Node.js and Google Chrome installed, run `npm ci && npm test` from this folder. The six suites use isolated fixtures. Set `CHROME_PATH` to a Chrome executable if it is installed in a custom location. Review screenshots are written to the system temporary directory.
 
 ## Compatibility
 
@@ -99,3 +99,12 @@ Official websites use separate opt-in adapters and exact optional host permissio
 - Added independent, default-off official Netflix and Prime Video switches. Chrome requests exact service host access when enabled; the extension registers only the enabled, permitted adapter.
 - Official Prime applies conservative decorative glass to observed public catalog surfaces and retains its native rails. Official Netflix requires its candidate catalog header and rows, reports experimental status, and remains unverified on the current signed-in layout.
 - Isolated fixture checks cover settings synchronization, optional-site lifecycle, cleanup, guards, original-node preservation and scrolling behavior. Playback was not exercised.
+
+
+### 1.7.0 — refined liquid glass (2026-10-30)
+- Unified neutral glass surfaces, fine reflective edges and shadows across NetMirror, the optional official-site adapters, and shared controls. Quieter header tabs and a clear selected-provider pill let artwork lead.
+- Rebuilt the popup with native accessible switches, consistent sliders, readable labels, and a layout that fits Chrome’s popup height. Functional slider tracks and off-switch boundaries exceed 3:1 contrast against the popup surface.
+- Added a close button to in-page settings; Close and Escape restore focus and update the trigger’s expanded state. Kept saved glass values and service choices.
+- Consolidated the accumulated skin CSS while preserving native nodes, catalog geometry, hero clipping, scrolling, provider delegation, and player exclusions. No additional permissions.
+- All six unchanged regression suites passed. Hallmark static review reported no open failures or reflex findings. Its Puppeteer render tier was unavailable; Playwright fixture screenshots and live Chrome inspection were used instead. Independent finish review found one control-contrast issue, now resolved.
+- Reloaded version 1.7.0 in the user’s Chrome and verified the Netflix and Prime layouts on NetMirror, native switching, settings, and the popup. Existing playback tabs were left untouched and receive the new styles when refreshed. Authenticated official Netflix/Prime pages and playback were not exercised in this update.

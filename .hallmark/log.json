@@ -1,0 +1,47 @@
+[
+  {
+    "date": "2026-10-30",
+    "mode": "redesign",
+    "depth": "restyle",
+    "scope": "app",
+    "theme": "project",
+    "entry": "popup.html",
+    "prompt": "Improve the existing liquid glass skin and update it in Chrome",
+    "signature": "Artwork visible through functional glass controls",
+    "files": [
+      "glass-controls.css",
+      "skin.css",
+      "official.css",
+      "popup.html",
+      "popup.css",
+      "content.js"
+    ],
+    "waived": [
+      "24b: native range thumb offset centres the control exactly"
+    ],
+    "verification": {
+      "regression": "Six existing suites passed unchanged",
+      "static": "0 FAIL / 0 REFLEX; one waiver, one answered finish check",
+      "hallmark_render": "Unavailable: puppeteer-core is not installed; existing Playwright Chrome fixtures and live native Chrome inspection used instead",
+      "finish_review": "subagent; one contrast finding resolved",
+      "live": [
+        "Chrome extension 1.7.0 reloaded from source folder",
+        "Netflix catalog and settings verified",
+        "Transparency keyboard update 64 to 65 to 64; blur preserved at 10px",
+        "Close returns focus to settings button",
+        "Popup verified and saved official-site choices preserved",
+        "Netflix to Prime native switching and Prime catalog visually verified",
+        "Netflix title details opened and Escape returned to catalog"
+      ],
+      "limits": [
+        "No authenticated official-site live verification",
+        "Existing playback tabs not refreshed",
+        "Before screenshot not saved; before static record retained"
+      ]
+    },
+    "copy_changes": [
+      "A different view. -> Appearance for your streaming sites.",
+      "Open NetMirror \u2197 -> Open NetMirror"
+    ]
+  }
+]

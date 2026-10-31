@@ -1,11 +1,57 @@
-.nmg-glass-controls { border:0;padding:0;margin:22px 0 18px;min-width:0;font:14px -apple-system,BlinkMacSystemFont,"Helvetica Neue",sans-serif;color:#f5f5f7; }
-.nmg-glass-controls legend { padding:0;margin-bottom:18px;font-size:16px;font-weight:700; }
-.nmg-glass-controls label { display:block;margin-top:14px;font-weight:600; }
-.nmg-glass-controls output { float:right;font-variant-numeric:tabular-nums;color:#c9eaf5; }
-.nmg-glass-controls input[type="range"] { display:block;width:100%;height:26px;margin:8px 0 0;accent-color:#b8e8f5;cursor:pointer; }
-.nmg-glass-controls .nmg-range-hints { display:flex;justify-content:space-between;font-size:11px;color:#b5c4cd; }
-.nmg-glass-controls p { font-size:12px;line-height:1.5;color:#c5d4db; }
-.nmg-glass-controls button { padding:9px 12px;border:1px solid #ffffff35;border-radius:10px;background:#ffffff13;color:#fff;font-family:inherit;font-size:12px;font-weight:600;cursor:pointer; }
-.nmg-glass-controls .nmg-glass-error { color:#ffccbc; }
+/* Hallmark · scope: app · genre: atmospheric · theme: project · redesign: polish · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3 · weakest: V, familiar native ranges retained for keyboard access */
+/* Hallmark · waive 24b · slider thumb offset is half the 16px thumb minus the 4px track · -6px centres the native range thumb exactly */
+/* Shared tokens live here because this file is already loaded on every supported surface. */
+:root {
+  --nmg-font:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;
+  --nmg-canvas:#1c1c1e;
+  --nmg-ink:#f4f5f7;
+  --nmg-muted:#b9bfc8;
+  --nmg-on-light:#171c23;
+  --nmg-accent:#d2e6ee;
+  --nmg-focus:#b4e2f3;
+  --nmg-error:#ffd1c2;
+  --nmg-rule:rgba(232,239,247,.12);
+  --nmg-edge:rgba(236,244,252,.24);
+  --nmg-edge-strong:rgba(244,248,255,.42);
+  --nmg-hover:rgba(236,244,252,.1);
+  --nmg-pressed:rgba(236,244,252,.16);
+  --nmg-switch-off:#363b44;
+  --nmg-disabled-fill:#2a2e35;
+  --nmg-solid:#282d35;
+  --nmg-glass:rgba(27,32,40,var(--nmg-glass-opacity,.48));
+  --nmg-dialog:rgba(27,32,40,var(--nmg-dialog-opacity,.68));
+  --nmg-reflection:linear-gradient(145deg,rgba(244,248,255,.14),rgba(244,248,255,.025) 38%,rgba(207,225,238,.06));
+  --nmg-surface:var(--nmg-reflection),var(--nmg-glass);
+  --nmg-dialog-surface:var(--nmg-reflection),var(--nmg-dialog);
+  --nmg-popup-surface:linear-gradient(145deg,#303640,#20242c 48%,#1a1e25);
+  --nmg-shadow:inset 0 1px 0 rgba(244,248,255,.24),inset 0 -1px 0 rgba(244,248,255,.04),0 8px 24px rgba(6,9,15,.2);
+  --nmg-shadow-dialog:inset 0 1px 0 rgba(244,248,255,.3),0 24px 64px rgba(6,9,15,.4);
+  --nmg-blur:blur(var(--nmg-glass-radius,28px)) saturate(135%);
+  --nmg-control-fill:rgba(236,244,252,.06);
+  --nmg-track:rgba(236,244,252,.45);
+  --nmg-control-edge:rgba(236,244,252,.45);
+}
+.nmg-glass-controls { border:0;padding:0;margin:20px 0 16px;min-width:0;font:14px/1.4 var(--nmg-font);color:var(--nmg-ink); }
+.nmg-glass-controls legend { padding:0;margin-bottom:16px;font-size:16px;font-weight:650; }
+.nmg-glass-controls label { display:block;margin-top:12px;font-size:13px;font-weight:550; }
+.nmg-glass-controls output { float:right;font-size:12px;font-weight:500;font-variant-numeric:tabular-nums;color:var(--nmg-accent); }
+.nmg-glass-controls input[type="range"] { appearance:none;-webkit-appearance:none;display:block;width:100%;height:32px;margin:4px 0 0;padding:0;background:transparent;cursor:pointer; }
+.nmg-glass-controls input[type="range"]::-webkit-slider-runnable-track { height:4px;border-radius:4px;background:var(--nmg-track); }
+.nmg-glass-controls input[type="range"]::-webkit-slider-thumb { appearance:none;-webkit-appearance:none;width:16px;height:16px;margin-top:-6px;border:0;border-radius:50%;background:var(--nmg-ink);box-shadow:0 0 0 4px var(--nmg-control-fill); }
+.nmg-glass-controls input[type="range"]:hover::-webkit-slider-thumb { background:var(--nmg-accent);box-shadow:0 0 0 5px var(--nmg-hover); }
+.nmg-glass-controls input[type="range"]::-moz-range-track { height:4px;border-radius:4px;background:var(--nmg-track); }
+.nmg-glass-controls input[type="range"]::-moz-range-thumb { width:16px;height:16px;border:0;border-radius:50%;background:var(--nmg-ink); }
+.nmg-glass-controls .nmg-range-hints { display:flex;justify-content:space-between;font-size:11px;color:var(--nmg-muted); }
+.nmg-glass-controls p { font-size:12px;line-height:1.5;color:var(--nmg-muted);text-wrap:pretty; }
+.nmg-glass-controls button { min-height:40px;padding:8px 12px;border:1px solid var(--nmg-rule);border-radius:12px;background:var(--nmg-control-fill);color:var(--nmg-ink);font:550 12px var(--nmg-font);cursor:pointer; }
+.nmg-glass-controls button:hover { background:var(--nmg-hover);border-color:var(--nmg-edge); }
+.nmg-glass-controls button:active { background:var(--nmg-pressed); }
+.nmg-glass-controls :focus-visible { outline:2px solid var(--nmg-focus);outline-offset:4px; }
+.nmg-glass-controls .nmg-glass-error { color:var(--nmg-error); }
 .nmg-glass-controls [hidden] { display:none !important; }
-.nmg-glass-controls:disabled { opacity:.55; }
+.nmg-glass-controls:disabled { color:var(--nmg-muted); }
+.nmg-glass-controls:disabled :is(input,button) { cursor:not-allowed;color:var(--nmg-muted);background:var(--nmg-disabled-fill); }
+.nmg-glass-controls:disabled input::-webkit-slider-thumb { background:var(--nmg-muted);box-shadow:none; }
+.nmg-glass-controls:disabled output { color:var(--nmg-muted); }
+@media(forced-colors:active) { .nmg-glass-controls input[type="range"] { appearance:auto; } }
